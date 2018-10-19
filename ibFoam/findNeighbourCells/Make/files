@@ -1,0 +1,3 @@
+findNeighbourCells.C
+
+LIB = $(FOAM_USER_LIBBIN)/libfindNeighbourCells

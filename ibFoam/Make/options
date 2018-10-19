@@ -1,0 +1,11 @@
+EXE_INC = \
+    -I$(LIB_SRC)/finiteVolume/lnInclude \
+    -I$(LIB_SRC)/meshTools/lnInclude \
+    -Iweight \
+    -Ifind_neighbours
+
+EXE_LIBS = \
+    -lfiniteVolume \
+    -lmeshTools \
+    -L$(FOAM_USER_LIBBIN) -lweight \
+    -L$(FOAM_USER_LIBBIN) -lfind_neighbours

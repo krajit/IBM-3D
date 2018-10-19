@@ -1,0 +1,161 @@
+/*---------------------------------------------------------------------------*\
+  =========                 |
+  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+   \\    /   O peration     |
+    \\  /    A nd           | Copyright (C) 2016 OpenFOAM Foundation
+     \\/     M anipulation  | Copyright (C) 2016 OpenCFD Ltd.
+-------------------------------------------------------------------------------
+License
+    This file is part of OpenFOAM.
+
+    OpenFOAM is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    OpenFOAM is distributed in the hope that it will be useful, but WITHOUT
+    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+    FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+    for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
+
+\*---------------------------------------------------------------------------*/
+
+#include "writeOptimalBoundary.H"
+#include "volFields.H"
+#include "addToRunTimeSelectionTable.H"
+#include "OFstream.H"
+
+// * * * * * * * * * * * * * * Static Data Members * * * * * * * * * * * * * //
+
+namespace Foam
+{
+namespace functionObjects
+{
+    defineTypeNameAndDebug(writeOptimalBoundary, 0);
+    addToRunTimeSelectionTable(functionObject, writeOptimalBoundary, dictionary);
+}
+}
+
+
+// * * * * * * * * * * * * * * * * Constructors  * * * * * * * * * * * * * * //
+
+Foam::functionObjects::writeOptimalBoundary::writeOptimalBoundary
+(
+    const word& name,
+    const Time& runTime,
+    const dictionary& dict
+)
+:
+    fvMeshFunctionObject(name, runTime, dict),
+    outPutFileName(dict.lookup("outputFileName")), // AK: Apr 21, 2018
+    alphaCutOff(readScalar(dict.lookup("alphaCutOff")))
+{
+    read(dict);
+
+}
+
+
+// * * * * * * * * * * * * * * * * Destructor  * * * * * * * * * * * * * * * //
+
+Foam::functionObjects::writeOptimalBoundary::~writeOptimalBoundary()
+{}
+
+
+// * * * * * * * * * * * * * * * Member Functions  * * * * * * * * * * * * * //
+
+bool Foam::functionObjects::writeOptimalBoundary::read(const dictionary& dict)
+{
+    return fvMeshFunctionObject::read(dict);
+}
+
+
+bool Foam::functionObjects::writeOptimalBoundary::execute()
+{
+
+    const volScalarField& alpha = lookupObject<volScalarField>("alpha");    
+    
+    fileName outputFile(outPutFileName);
+    OFstream os(outputFile);
+    
+    labelHashSet boundaryFacesSet(0);
+    
+    forAll(alpha.internalField(), cellI)
+    {
+        // keep only those cells whose alpha is less than a cut off
+        //double alphaCutOff = 100.00;  // TODO: make this cutoff to be read from the function dictionary
+
+        if (alpha[cellI] <= alphaCutOff)
+        {
+            const cell & cellFaces = mesh_.cells()[cellI];
+            // Info << "cell " << cellI << " faces :" << cellFaces << endl;
+            
+            // forAll( cellFaces, i )        // loop over all faces in cellI
+            // {
+            //     vector faceINormal = mesh_.Sf()[i] / mesh_.magSf()[i] ; 
+            //     Info << " i = " << i << ", faceCenter = " << mesh_.faceCentres()[cellFaces[i]] << endl ;
+            // }
+            
+            forAll( cellFaces, i )        // loop over all faces in cellI
+            {
+                if (boundaryFacesSet.found(cellFaces[i]))
+                {
+                    // face already exist in the list.
+                    // it is an internal face
+                    // remove it
+
+                    boundaryFacesSet.unset(cellFaces[i]);
+                }
+                else
+                {
+                    // face not found added in the list yet
+                    // add it
+                    // if it is an internal face, it will be removed in another loop
+                    // if it a bounary face, it will stay in the set
+                    boundaryFacesSet.set(cellFaces[i]);
+                }
+            }      
+        }
+    }
+
+    // remove faces of frontAndBack
+    label patchID = mesh_.boundaryMesh().findPatchID("frontAndBack"); 
+    const polyPatch& cPatch = mesh_.boundaryMesh()[patchID];
+
+    label startFace = cPatch.start();
+    forAll(cPatch, facei)
+    {
+        boundaryFacesSet.unset(startFace);
+        startFace++;
+    }
+
+    // // write cell centers
+    // forAll(boundaryFacesSet,faceI)
+    // {
+    //     vector faceCenter = mesh_.faceCentres()[boundaryFacesSet(faceI)];
+    //     Info << "faceI = " << faceI << " boundaryFacesSet: "<< boundaryFacesSet(faceI) <<  "faceCenter" << faceCenter << endl;
+
+    // }
+
+    //    Info << boundaryFacesSet << endl;
+
+    forAllConstIter(labelHashSet,boundaryFacesSet,iter)
+    {
+        label facei = iter.key();
+        vector faceCenter = mesh_.faceCentres()[facei];
+        os << faceCenter[0] <<"\t" << faceCenter[1] <<"\t" << faceCenter[2] << endl; 
+        
+    }
+    return true;
+}
+
+
+// bool Foam::functionObjects::writeOptimalBoundary::write()
+// {
+//     return true;
+// }
+
+
+// ************************************************************************* //
