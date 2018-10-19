@@ -98,13 +98,41 @@ int main(int argc, char *argv[])
 
          #include "CourantNo.H"
 
-         #include "deform1.H"              //deform solid        X(n+1/2)       
-         #include "Force.H"                //compute solid force F(n+1/2)        
-         #include "spread.H"               //spread force        f(n+1/2)  
-         #include "predictor.H"            //fluid solver        v(n+1/2) and p(n+1/2)                          
-         #include "createPhi.H"            //convective term     v(n+1/2)          
-         #include "deform2.H"              //deform solid        X(n+1)              
-         #include "corrector.H"            //fluid solver        v(n+1)   and p(n+1) 
+
+     pointField temporary_pointcloud_;                                                   //initialising temporary points X(n+1/2)
+     
+
+     Info<< "\n deform solid for first half time step\n" << endl;
+         #include "deform1.H"                                                            //deform solid        X(n+1/2) 
+
+
+     Info<< "\n Computes Lagrangian nodal force at half time step\n" << endl;      
+         #include "Force.H"                                                              //compute solid force F(n+1/2) 
+
+
+
+     Info<< "\n Spread the forces to the fluid gird\n" << endl;       
+         #include "spread.H"                                                             //spread force        f(n+1/2) 
+  
+
+
+     Info<< "\n Solve for velocity and pressure at first half time step\n" << endl; 
+         #include "predictor.H"                                                          //fluid solver        v(n+1/2) and p(n+1/2)   
+
+
+
+     Info<< "\n Computing flux\n" << endl;                       
+         #include "createPhi.H"                                                           //convective term     v(n+1/2)   
+
+
+
+     Info<< "\n Deform the solid to end of the timestep\n" << endl;       
+         #include "deform2.H"                                                              //deform solid        X(n+1)
+
+
+
+     Info<< "\n Solve for velocity and pressure and complete the timestep \n" << endl;              
+         #include "corrector.H"                                                            //fluid solver        v(n+1)   and p(n+1) 
    
 
         runTime.write();

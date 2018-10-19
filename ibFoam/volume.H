@@ -1,4 +1,4 @@
-scalarField volume_(connectivity_matrix_.size(),0.0) 	 
+scalarField volume_(connectivity_matrix_.size(),0.0) ;	 
 {
     
 

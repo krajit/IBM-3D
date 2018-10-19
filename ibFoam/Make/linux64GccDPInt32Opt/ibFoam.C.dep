@@ -784,12 +784,14 @@ createFields.H \
 $(WM_PROJECT_DIR)/src/finiteVolume/lnInclude/createPhi.H \
 $(WM_PROJECT_DIR)/src/OpenFOAM/lnInclude/labelListIOList.H \
 $(WM_PROJECT_DIR)/src/finiteVolume/lnInclude/initContinuityErrs.H \
+volume.H \
 $(WM_PROJECT_DIR)/src/finiteVolume/lnInclude/CourantNo.H \
-interpolate.H \
-weight/weight.H \
-find_neighbours/find_neighbours.H \
+deform1.H \
+Force.H \
+spread.H \
 predictor.H \
 $(WM_PROJECT_DIR)/src/finiteVolume/lnInclude/continuityErrs.H \
+deform2.H \
 corrector.H \
 
 

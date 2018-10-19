@@ -2,7 +2,7 @@ forAll(current_pointcloud_,i)
 			{
 
 		 	 
-			//COMPUTING VELOCITY AT THE PROBE POINT
+			//COMPUTING VELOCITY AT THE PROBE POINT (Xn)
 
 			   vector probePoint=current_pointcloud_[i];               
 			   vector velocity(0.0,0.0,0.0);                                     //initialising probe point velocity
@@ -30,9 +30,9 @@ forAll(current_pointcloud_,i)
 				 
 				  
 
-                //MOVE THE POINT FOR THE FIRST HALF TIME STEP//
+                //MOVE THE POINT FOR THE FIRST HALF TIME STEP AND SAVE INTO TEMPORARY POINT CLOUD//
 
-                current_pointcloud_[i]=probePoint+ velocity*(delta/2);     
+                temporary_pointcloud_[i]=probePoint+ velocity*(delta/2);     
                 //Info<<"current point"<<current_pointcloud_[i]<<endl;
                 //Info<<"velocity of the cloud point"<<velocity<<endl;
              }
